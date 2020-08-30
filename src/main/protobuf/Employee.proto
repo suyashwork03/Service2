@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "com.dailmer.service2.models";
+
+message Employee{
+	string id = 1;
+	string name = 2;
+	string dob = 3;
+	string salary = 4;
+	string age = 5;
+	string fileType = 6;
+}
