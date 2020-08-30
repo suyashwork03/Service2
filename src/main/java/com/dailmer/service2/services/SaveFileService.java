@@ -22,6 +22,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,6 +40,7 @@ import org.xml.sax.SAXException;
 
 import com.dailmer.service2.models.DataModel;
 import com.dailmer.service2.models.EmployeeOuterClass.Employee;
+import com.dailmer.service2.models.Employees;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
@@ -115,9 +117,14 @@ public class SaveFileService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} else
-			updateXML(employee);
-
+		} else {
+			try {
+				updateXML(employee);
+			} catch (ParserConfigurationException | JAXBException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return "{\"status\":\"File Updated\"}";
 
 	}
@@ -208,13 +215,18 @@ public class SaveFileService {
 	 */
 	private String writeToXML(Employee employee) {
 		String fileName = employee.getId() + ".xml";
-		DataModel model = new DataModel(employee.getName(), employee.getDob(), employee.getSalary(), employee.getAge());
+		Employees employees = new Employees();
+
+		List<DataModel> empList = new ArrayList<>();
+
+		empList.add(new DataModel(employee.getName(), employee.getDob(), employee.getSalary(), employee.getAge()));
+		employees.setEmployeeList(empList);
 		try {
-			JAXBContext jaxbContext = JAXBContext.newInstance(DataModel.class);
+			JAXBContext jaxbContext = JAXBContext.newInstance(Employees.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 			File file = new File(fileName);
-			jaxbMarshaller.marshal(model, file);
+			jaxbMarshaller.marshal(employees, file);
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
@@ -356,19 +368,57 @@ public class SaveFileService {
 
 	}
 
-	private void updateXML(Employee employee) {
+	private String updateXML(Employee employee) throws ParserConfigurationException, JAXBException {
 		String fileName = employee.getId() + ".xml";
-		List<DataModel> employees = new ArrayList<>();
-		DataModel model = new DataModel(employee.getName(), employee.getDob(), employee.getSalary(), employee.getAge());
+
+		File file = new File(fileName);
+		/*
+		 * DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		 * DocumentBuilder db = dbf.newDocumentBuilder(); Document doc = null; try { doc
+		 * = db.parse(file); } catch (SAXException | IOException e) { // TODO
+		 * Auto-generated catch block e.printStackTrace(); }
+		 * doc.getDocumentElement().normalize(); NodeList nodeList =
+		 * doc.getElementsByTagName("dataModel"); Employees employees = new Employees();
+		 * List<DataModel> empList = new ArrayList<>(); for (int itr = 0; itr <
+		 * nodeList.getLength(); itr++) { Node node = nodeList.item(itr); if
+		 * (node.getNodeType() == Node.ELEMENT_NODE) { Element eElement = (Element)
+		 * node;
+		 * 
+		 * empList.add((new
+		 * DataModel(eElement.getElementsByTagName("name").item(0).getTextContent(),
+		 * eElement.getElementsByTagName("dob").item(0).getTextContent(),
+		 * eElement.getElementsByTagName("salary").item(0).getTextContent(),
+		 * eElement.getElementsByTagName("age").item(0).getTextContent())));
+		 * 
+		 * } }
+		 */
+
+		JAXBContext jaxbContext = JAXBContext.newInstance(Employees.class);
+		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+
+		Employees emps = (Employees) jaxbUnmarshaller.unmarshal(file);
+		Employees employees = new Employees();
+		List<DataModel> list = new ArrayList<>();
+		for (DataModel emp : emps.getEmployeeList()) {
+			list.add(emp);
+		}
+		employees.setEmployeeList(list);
+		System.out.println(employees);
+		employees.getEmployeeList()
+				.add(new DataModel(employee.getName(), employee.getDob(), employee.getSalary(), employee.getAge()));
+		System.out.println(employees);
 		try {
-			JAXBContext jaxbContext = JAXBContext.newInstance(DataModel.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+			JAXBContext jaxbContextw = JAXBContext.newInstance(Employees.class);
+			Marshaller jaxbMarshaller = jaxbContextw.createMarshaller();
 			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			File file = new File(fileName);
 			jaxbMarshaller.marshal(employees, file);
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
+
+		setKey();
+		String data = encrypt(employee.toByteArray());
+		return data;
 	}
 
 }

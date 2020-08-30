@@ -1,9 +1,12 @@
 package com.dailmer.service2.models;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
+@XmlRootElement(name = "employee")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class DataModel {
 
 	private String name;
@@ -23,7 +26,6 @@ public class DataModel {
 		this.age = age;
 	}
 
-	@XmlElement
 	public String getName() {
 		return name;
 	}
@@ -32,7 +34,6 @@ public class DataModel {
 		this.name = name;
 	}
 
-	@XmlElement
 	public String getDob() {
 		return dob;
 	}
@@ -41,7 +42,6 @@ public class DataModel {
 		this.dob = dob;
 	}
 
-	@XmlElement
 	public String getSalary() {
 		return salary;
 	}
@@ -50,7 +50,6 @@ public class DataModel {
 		this.salary = salary;
 	}
 
-	@XmlElement
 	public String getAge() {
 		return age;
 	}
@@ -58,5 +57,12 @@ public class DataModel {
 	public void setAge(String age) {
 		this.age = age;
 	}
+
+	@Override
+	public String toString() {
+		return "DataModel [name=" + name + ", dob=" + dob + ", salary=" + salary + ", age=" + age + "]";
+	}
+	
+	
 
 }

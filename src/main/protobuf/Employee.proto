@@ -10,3 +10,6 @@ message Employee{
 	string age = 5;
 	string fileType = 6;
 }
+message EmployeeList {
+  repeated Employee employee = 7;
+}
